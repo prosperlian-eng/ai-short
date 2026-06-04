@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShortAI — AIショート動画生成デモ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== HERO ========== -->
+  <header class="hero">
+    <div class="hero-badge">DEMO</div>
+    <h1 class="hero-title">ShortAI<span class="hero-dot">.</span></h1>
+    <p class="hero-subtitle">本編動画をアップロードするだけで<br>バズるショート動画を自動生成</p>
+  </header>
+
+  <!-- ========== MAIN APP ========== -->
+  <main class="app-container">
+
+    <!-- STEP 1: Upload -->
+    <section class="card" id="upload-section">
+      <div class="step-badge">STEP 1</div>
+      <h2 class="card-title">動画をアップロード</h2>
+
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="video-input" accept="video/mp4,video/quicktime,.mov" hidden />
+        <div class="upload-icon">▶</div>
+        <p class="upload-hint">mp4 / mov ファイルをドロップ<br>またはクリックして選択</p>
+        <p class="upload-filename" id="upload-filename"></p>
+      </div>
+
+      <video id="source-video" controls style="display:none;"></video>
+    </section>
+
+    <!-- STEP 2: Settings -->
+    <section class="card" id="settings-section">
+      <div class="step-badge">STEP 2</div>
+      <h2 class="card-title">生成設定</h2>
+
+      <div class="settings-grid">
+
+        <!-- 生成本数 -->
+        <div class="setting-group">
+          <label class="setting-label">生成本数</label>
+          <div class="btn-group" id="count-group">
+            <button class="toggle-btn active" data-value="3">3本</button>
+            <button class="toggle-btn" data-value="5">5本</button>
+            <button class="toggle-btn" data-value="10">10本</button>
+          </div>
+        </div>
+
+        <!-- テキストスタイル -->
+        <div class="setting-group">
+          <label class="setting-label">テキストスタイル</label>
+          <div class="btn-group" id="font-group">
+            <button class="toggle-btn active" data-value="gothic">ゴシック強調</button>
+            <button class="toggle-btn" data-value="mincho">明朝ドラマ風</button>
+            <button class="toggle-btn" data-value="youtube">YouTube風</button>
+            <button class="toggle-btn" data-value="glow">光彩</button>
+            <button class="toggle-btn" data-value="stroke">縁取り</button>
+            <button class="toggle-btn" data-value="box">ボックス</button>
+            <button class="toggle-btn" data-value="simple">シンプル</button>
+          </div>
+        </div>
+
+        <!-- テキストカラー -->
+        <div class="setting-group">
+          <label class="setting-label">テキストカラー</label>
+          <div class="color-picker-row" id="text-color-group">
+            <div class="color-dot active" data-color="#ffffff" style="background:#fff;" title="白"></div>
+            <div class="color-dot" data-color="#FFD700" style="background:#FFD700;" title="ゴールド"></div>
+            <div class="color-dot" data-color="#FF4500" style="background:#FF4500;" title="オレンジレッド"></div>
+            <div class="color-dot" data-color="#00CFFF" style="background:#00CFFF;" title="シアン"></div>
+            <div class="color-dot" data-color="#39FF14" style="background:#39FF14;" title="ネオングリーン"></div>
+            <div class="color-dot" data-color="#FF69B4" style="background:#FF69B4;" title="ピンク"></div>
+            <input type="color" id="custom-text-color" value="#ffffff" title="カスタム" />
+          </div>
+        </div>
+
+        <!-- 枠スタイル -->
+        <div class="setting-group">
+          <label class="setting-label">枠スタイル</label>
+          <div class="btn-group" id="border-group">
+            <button class="toggle-btn active" data-value="none">なし</button>
+            <button class="toggle-btn" data-value="thin">細線</button>
+            <button class="toggle-btn" data-value="thick">太線</button>
+            <button class="toggle-btn" data-value="glow">光彩枠</button>
+            <button class="toggle-btn" data-value="corner">角飾り</button>
+          </div>
+        </div>
+
+        <!-- 枠カラー -->
+        <div class="setting-group">
+          <label class="setting-label">枠カラー</label>
+          <div class="color-picker-row" id="border-color-group">
+            <div class="color-dot active" data-color="#FFD700" style="background:#FFD700;" title="ゴールド"></div>
+            <div class="color-dot" data-color="#ffffff" style="background:#fff;" title="白"></div>
+            <div class="color-dot" data-color="#4a9eff" style="background:#4a9eff;" title="ブルー"></div>
+            <div class="color-dot" data-color="#FF4500" style="background:#FF4500;" title="レッド"></div>
+            <div class="color-dot" data-color="#39FF14" style="background:#39FF14;" title="グリーン"></div>
+            <input type="color" id="custom-border-color" value="#FFD700" title="カスタム" />
+          </div>
+        </div>
+
+        <!-- パターン -->
+        <div class="setting-group">
+          <label class="setting-label">背景パターン</label>
+          <div class="btn-group" id="pattern-group">
+            <button class="toggle-btn active" data-value="random">ランダム</button>
+            <button class="toggle-btn" data-value="dramatic">ドラマチック</button>
+            <button class="toggle-btn" data-value="clean">クリーン</button>
+            <button class="toggle-btn" data-value="energy">エネルギー</button>
+            <button class="toggle-btn" data-value="luxury">ラグジュアリー</button>
+            <button class="toggle-btn" data-value="street">ストリート</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- プリセット保存 -->
+      <div class="preset-bar">
+        <span class="setting-label" style="margin:0;">プリセット</span>
+        <div class="preset-actions">
+          <button class="preset-btn" id="btn-save-preset">💾 保存</button>
+          <button class="preset-btn" id="btn-load-preset">📂 読み込む</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2.5: Outro -->
+    <section class="card" id="outro-section">
+      <div class="step-badge">OUTRO</div>
+      <h2 class="card-title">エンディング設定 <span class="card-title-sub">（動画末尾 5秒）</span></h2>
+
+      <div class="outro-toggle-row">
+        <button class="outro-mode-btn active" data-mode="text" id="outro-mode-text">✏️ テキスト</button>
+        <button class="outro-mode-btn" data-mode="video" id="outro-mode-video">🎬 動画アップロード</button>
+        <button class="outro-mode-btn" data-mode="none" id="outro-mode-none">✕ なし</button>
+      </div>
+
+      <!-- テキストモード -->
+      <div id="outro-text-panel">
+        <div class="outro-field-row">
+          <div class="outro-field">
+            <label class="setting-label">チャンネル名</label>
+            <input type="text" id="outro-channel" placeholder="例：golfami channel" maxlength="40" />
+          </div>
+          <div class="outro-field">
+            <label class="setting-label">サブテキスト</label>
+            <input type="text" id="outro-sub" placeholder="例：チャンネル登録よろしくお願いします！" maxlength="60" />
+          </div>
+        </div>
+        <div class="outro-field-row">
+          <div class="outro-field">
+            <label class="setting-label">SNSリンク（任意）</label>
+            <input type="text" id="outro-sns" placeholder="例：@golfami_channel" maxlength="50" />
+          </div>
+          <div class="outro-field">
+            <label class="setting-label">背景カラー</label>
+            <div class="color-picker-row" id="outro-bg-group">
+              <div class="color-dot active" data-color="#0a0a0f" style="background:#0a0a0f;border:1px solid #333;" title="ダーク"></div>
+              <div class="color-dot" data-color="#0a1628" style="background:#0a1628;" title="ネイビー"></div>
+              <div class="color-dot" data-color="#1a0028" style="background:#1a0028;" title="パープル"></div>
+              <div class="color-dot" data-color="#0a1a00" style="background:#0a1a00;" title="グリーン"></div>
+              <div class="color-dot" data-color="#1a0a00" style="background:#1a0a00;" title="ブラウン"></div>
+              <input type="color" id="outro-bg-custom" value="#0a0a0f" />
+            </div>
+          </div>
+        </div>
+        <div class="outro-preview-wrap">
+          <div class="outro-preview-label">プレビュー</div>
+          <canvas id="outro-preview-canvas" width="270" height="480"></canvas>
+        </div>
+      </div>
+
+      <!-- 動画モード -->
+      <div id="outro-video-panel" style="display:none;">
+        <div class="upload-zone upload-zone--sm" id="outro-upload-zone">
+          <input type="file" id="outro-video-input" accept="video/mp4,video/quicktime,.mov" hidden />
+          <div class="upload-icon" style="font-size:24px;">🎬</div>
+          <p class="upload-hint">エンディング動画をドロップ<br>またはクリックして選択</p>
+          <p class="upload-filename" id="outro-filename"></p>
+        </div>
+        <p class="outro-note">※ 先頭から5秒が使用されます。推奨：9:16縦型</p>
+      </div>
+    </section>
+
+    <!-- STEP 3: Generate -->
+    <section class="card center-card" id="generate-section">
+      <div class="step-badge">STEP 3</div>
+      <h2 class="card-title">AIショートを生成</h2>
+      <button class="generate-btn" id="generate-btn">
+        <span class="generate-icon">✦</span> AIショートを生成する
+      </button>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results-section" style="display:none;">
+      <div class="results-header">
+        <h2 class="results-title">生成されたショート動画</h2>
+        <div class="results-actions">
+          <button class="regen-btn" id="regen-btn">🎲 タイトルを再生成</button>
+          <button class="regen-btn" id="dl-all-btn">⬇ 全てダウンロード</button>
+        </div>
+      </div>
+
+      <!-- ツールバー：表示切替 / 選択操作 -->
+      <div class="results-toolbar">
+        <!-- 表示切替 -->
+        <div class="view-toggle">
+          <button class="view-btn active" id="btn-view-grid" title="グリッド表示">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <rect x="0" y="0" width="6" height="6" rx="1"/><rect x="10" y="0" width="6" height="6" rx="1"/>
+              <rect x="0" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/>
+            </svg>
+            グリッド
+          </button>
+          <button class="view-btn" id="btn-view-list" title="リスト表示">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <rect x="0" y="1" width="16" height="3" rx="1"/><rect x="0" y="7" width="16" height="3" rx="1"/>
+              <rect x="0" y="13" width="16" height="3" rx="1"/>
+            </svg>
+            リスト
+          </button>
+        </div>
+
+        <!-- 選択操作 -->
+        <div class="select-toolbar">
+          <button class="sel-btn" id="btn-select-all">☑ 全選択</button>
+          <button class="sel-btn" id="btn-deselect-all">☐ 全解除</button>
+          <button class="sel-btn sel-btn--dl" id="btn-dl-selected" disabled>⬇ 選択をDL (<span id="sel-count">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="previews-grid" id="previews-grid"></div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>ShortAI DEMO — バックエンド不使用 / ブラウザのみで動作</p>
+  </footer>
+
+  <!-- Preset Modal -->
+  <div class="modal-overlay" id="preset-save-modal">
+    <div class="modal">
+      <h3>プリセットを保存</h3>
+      <div class="modal-field">
+        <label>プリセット名</label>
+        <input type="text" id="preset-name-input" placeholder="例：ゴルフ動画用" />
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn-primary" id="preset-save-confirm">保存</button>
+        <button class="modal-btn-cancel" id="preset-save-cancel">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="preset-load-modal">
+    <div class="modal">
+      <h3>保存済みプリセット</h3>
+      <div id="preset-list"></div>
+      <div class="modal-btns">
+        <button class="modal-btn-cancel" id="preset-load-close">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
