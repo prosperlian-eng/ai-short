@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHORT動画ジェネレーター</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: #111;
+    border-bottom: 1px solid #222;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header h1 { font-size: 18px; font-weight: 700; letter-spacing: .05em; }
+  .header span { font-size: 12px; color: #888; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    min-height: calc(100vh - 57px);
+  }
+
+  /* ========== SIDEBAR ========== */
+  .sidebar {
+    background: #111;
+    border-right: 1px solid #222;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+  .field input, .field textarea, .field select {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 10px;
+    outline: none;
+    font-family: inherit;
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: #4a9eff;
+  }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .color-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .15s, transform .15s;
+  }
+  .color-swatch:hover { transform: scale(1.1); }
+  .color-swatch.active { border-color: #fff; }
+
+  .font-options {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .font-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #aaa;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .font-btn:hover { border-color: #555; color: #fff; }
+  .font-btn.active { background: #4a9eff; border-color: #4a9eff; color: #fff; }
+
+  .style-options {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .style-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #aaa;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .style-btn:hover { border-color: #555; color: #fff; }
+  .style-btn.active { background: #2a2a2a; border-color: #4a9eff; color: #fff; }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .range-row input[type=range] {
+    flex: 1;
+    accent-color: #4a9eff;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+  .range-val {
+    font-size: 12px;
+    color: #aaa;
+    min-width: 32px;
+    text-align: right;
+  }
+
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .pattern-thumb {
+    aspect-ratio: 9/16;
+    border-radius: 6px;
+    border: 2px solid #2a2a2a;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color .15s;
+    position: relative;
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+  }
+  .pattern-thumb:hover { border-color: #555; }
+  .pattern-thumb.active { border-color: #4a9eff; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #4a9eff, #7c3aed);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .05em;
+    transition: opacity .15s;
+  }
+  .btn-primary:hover { opacity: .9; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 10px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #aaa;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+    margin-top: 8px;
+  }
+  .btn-secondary:hover { border-color: #555; color: #fff; }
+
+  /* ========== MAIN CONTENT ========== */
+  .main {
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .toolbar h2 { font-size: 15px; font-weight: 600; }
+  .toolbar-actions { display: flex; gap: 10px; }
+
+  .btn-generate {
+    padding: 9px 20px;
+    background: linear-gradient(135deg, #4a9eff, #7c3aed);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn-generate:hover { opacity: .9; }
+
+  .btn-dl-all {
+    padding: 9px 20px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #aaa;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-dl-all:hover { border-color: #555; color: #fff; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .card-wrap {
+    position: relative;
+  }
+  .card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: #666;
+    margin-bottom: 6px;
+  }
+
+  canvas.short-canvas {
+    width: 100%;
+    aspect-ratio: 9/16;
+    border-radius: 10px;
+    display: block;
+    background: #111;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .btn-dl {
+    flex: 1;
+    padding: 8px;
+    background: #1a1a2e;
+    border: 1px solid #4a9eff44;
+    border-radius: 6px;
+    color: #4a9eff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    text-align: center;
+  }
+  .btn-dl:hover { background: #4a9eff; color: #fff; }
+
+  .btn-regen {
+    padding: 8px 10px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-regen:hover { border-color: #555; color: #fff; }
+
+  /* ========== MODAL ========== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 480px;
+  }
+  .modal h3 { font-size: 16px; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-actions button { flex: 1; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .modal-save { background: #4a9eff; border: none; color: #fff; font-weight: 600; }
+  .modal-cancel { background: #1a1a1a; border: 1px solid #333; color: #aaa; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: #fff;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .3s, transform .3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ SHORT動画ジェネレーター</h1>
+  <span>ゴルフSNS向け縦型サムネイル自動生成</span>
+</div>
+
+<div class="layout">
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+
+    <div>
+      <div class="section-label">テキスト設定</div>
+
+      <div class="field">
+        <label>メインタイトル（改行あり）</label>
+        <textarea id="mainTitle" rows="3" placeholder="まさかの結果に&#10;全員驚愕。">まさかの結果に
+全員驚愕。</textarea>
+      </div>
+
+      <div class="field">
+        <label>フォントサイズ</label>
+        <div class="range-row">
+          <input type="range" id="fontSize" min="24" max="80" value="52">
+          <span class="range-val" id="fontSizeVal">52px</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>フォント</label>
+        <div class="font-options" id="fontOptions">
+          <button class="font-btn active" data-font="bold">ゴシック太</button>
+          <button class="font-btn" data-font="serif">明朝体</button>
+          <button class="font-btn" data-font="rounded">丸ゴシック</button>
+          <button class="font-btn" data-font="impact">IMPACT</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>テキストカラー</label>
+        <div class="color-row" id="textColorRow">
+          <div class="color-swatch active" data-color="#ffffff" style="background:#fff"></div>
+          <div class="color-swatch" data-color="#FFD700" style="background:#FFD700"></div>
+          <div class="color-swatch" data-color="#FF4500" style="background:#FF4500"></div>
+          <div class="color-swatch" data-color="#00CFFF" style="background:#00CFFF"></div>
+          <div class="color-swatch" data-color="#FF69B4" style="background:#FF69B4"></div>
+          <div class="color-swatch" data-color="#39FF14" style="background:#39FF14"></div>
+          <input type="color" id="customTextColor" value="#ffffff" style="width:28px;height:28px;border-radius:6px;border:1px solid #333;background:none;cursor:pointer;padding:0;">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>テキストスタイル</label>
+        <div class="style-options" id="textStyleOptions">
+          <button class="style-btn active" data-style="shadow">影</button>
+          <button class="style-btn" data-style="stroke">縁取り</button>
+          <button class="style-btn" data-style="glow">光彩</button>
+          <button class="style-btn" data-style="box">ボックス</button>
+          <button class="style-btn" data-style="none">なし</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">「続きは本編で」設定</div>
+      <div class="field">
+        <label>テキスト</label>
+        <input type="text" id="ctaText" value="続きは本編で">
+      </div>
+      <div class="field">
+        <label>カラー</label>
+        <div class="color-row" id="ctaColorRow">
+          <div class="color-swatch active" data-color="#FFD700" style="background:#FFD700"></div>
+          <div class="color-swatch" data-color="#ffffff" style="background:#fff"></div>
+          <div class="color-swatch" data-color="#FF4500" style="background:#FF4500"></div>
+          <div class="color-swatch" data-color="#00CFFF" style="background:#00CFFF"></div>
+          <div class="color-swatch" data-color="#39FF14" style="background:#39FF14"></div>
+          <input type="color" id="customCtaColor" value="#FFD700" style="width:28px;height:28px;border-radius:6px;border:1px solid #333;background:none;cursor:pointer;padding:0;">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">枠・背景</div>
+      <div class="field">
+        <label>枠スタイル</label>
+        <div class="style-options" id="borderStyleOptions">
+          <button class="style-btn active" data-style="none">なし</button>
+          <button class="style-btn" data-style="thin">細線</button>
+          <button class="style-btn" data-style="thick">太線</button>
+          <button class="style-btn" data-style="glow">光彩枠</button>
+          <button class="style-btn" data-style="corner">角飾り</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>枠カラー</label>
+        <div class="color-row" id="borderColorRow">
+          <div class="color-swatch active" data-color="#FFD700" style="background:#FFD700"></div>
+          <div class="color-swatch" data-color="#ffffff" style="background:#fff"></div>
+          <div class="color-swatch" data-color="#4a9eff" style="background:#4a9eff"></div>
+          <div class="color-swatch" data-color="#FF4500" style="background:#FF4500"></div>
+          <input type="color" id="customBorderColor" value="#FFD700" style="width:28px;height:28px;border-radius:6px;border:1px solid #333;background:none;cursor:pointer;padding:0;">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">生成設定</div>
+      <div class="field">
+        <label>枚数</label>
+        <div class="row2">
+          <select id="cardCount">
+            <option value="3">3枚</option>
+            <option value="5" selected>5枚</option>
+            <option value="8">8枚</option>
+            <option value="10">10枚</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>パターン</label>
+        <select id="patternMode">
+          <option value="random">ランダム（おすすめ）</option>
+          <option value="pattern1">パターン1：ドラマチック</option>
+          <option value="pattern2">パターン2：クリーン</option>
+          <option value="pattern3">パターン3：エネルギー</option>
+          <option value="pattern4">パターン4：ラグジュアリー</option>
+          <option value="pattern5">パターン5：ストリート</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn-primary" id="btnGenerate">▶ 全枚数を生成</button>
+      <button class="btn-secondary" id="btnSaveSettings">💾 設定を保存</button>
+      <button class="btn-secondary" id="btnLoadSettings">📂 保存した設定を読み込む</button>
+    </div>
+
+  </aside>
+
+  <!-- ========== MAIN ========== -->
+  <main class="main">
+    <div class="toolbar">
+      <h2 id="cardCountLabel">5枚のSHORT画像</h2>
+      <div class="toolbar-actions">
+        <button class="btn-dl-all" id="btnDlAll">⬇ 全てダウンロード</button>
+        <button class="btn-generate" id="btnGenerateTop">🎲 ランダム再生成</button>
+      </div>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+  </main>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>設定を保存</h3>
+    <div class="field">
+      <label>プリセット名</label>
+      <input type="text" id="presetName" placeholder="例：ゴルフ動画用" value="">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-save" id="btnConfirmSave">保存</button>
+      <button class="modal-cancel" id="btnCancelSave">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preset Load Modal -->
+<div class="modal-overlay" id="loadModal">
+  <div class="modal">
+    <h3>保存済みプリセット</h3>
+    <div id="presetList" style="max-height:240px;overflow-y:auto;margin-bottom:12px;"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="btnCancelLoad" style="flex:unset;padding:10px 24px;">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  mainTitle: "まさかの結果に\n全員驚愕。",
+  fontSize: 52,
+  font: "bold",
+  textColor: "#ffffff",
+  textStyle: "shadow",
+  ctaText: "続きは本編で",
+  ctaColor: "#FFD700",
+  borderStyle: "none",
+  borderColor: "#FFD700",
+  cardCount: 5,
+  patternMode: "random",
+};
+
+// Engaging golf short titles
+const TITLES = [
+  "まさかの結果に\n全員驚愕。",
+  "これが本当の\n成長記録。",
+  "この一打、\n空気が変わった。",
+  "この映像、見る前と\n後で景色が変わる。",
+  "親父の一言が\n深すぎた。",
+  "100切りを阻む\n意外な原因。",
+  "プロが教えてくれた\n本音がヤバい。",
+  "こんな打ち方、\n誰も教えてくれなかった。",
+  "一瞬で変わった\nスイング動画。",
+  "18番ホール、\n奇跡の逆転劇。",
+  "この練習法で\nHDCP一桁に。",
+  "スコア更新の瞬間を\nリアルタイムで。",
+  "ティーショットが\n別人になった理由。",
+  "バンカーから\n直接カップイン。",
+  "グリップ変えたら\n全てが変わった。",
+];
+
+const PATTERNS = {
+  pattern1: { bg: drawDramatic, name: "ドラマチック" },
+  pattern2: { bg: drawClean, name: "クリーン" },
+  pattern3: { bg: drawEnergy, name: "エネルギー" },
+  pattern4: { bg: drawLuxury, name: "ラグジュアリー" },
+  pattern5: { bg: drawStreet, name: "ストリート" },
+};
+
+let canvases = [];
+
+// ============================================================
+// DRAWING PATTERNS
+// ============================================================
+function drawDramatic(ctx, w, h) {
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#0a0014');
+  grad.addColorStop(0.5, '#1a0030');
+  grad.addColorStop(1, '#000');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+  // radial burst
+  const rg = ctx.createRadialGradient(w/2, h*0.45, 0, w/2, h*0.45, w*0.8);
+  rg.addColorStop(0, 'rgba(120,0,180,0.3)');
+  rg.addColorStop(1, 'transparent');
+  ctx.fillStyle = rg;
+  ctx.fillRect(0, 0, w, h);
+  // particles
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  for (let i = 0; i < 40; i++) {
+    const x = seededRand(i*3) * w;
+    const y = seededRand(i*3+1) * h;
+    const r = seededRand(i*3+2) * 2 + 0.5;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawClean(ctx, w, h) {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, w, h);
+  // horizontal lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let y = 0; y < h; y += 18) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  // accent line
+  ctx.strokeStyle = 'rgba(74,158,255,0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, h*0.42); ctx.lineTo(w, h*0.42); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, h*0.62); ctx.lineTo(w, h*0.62); ctx.stroke();
+}
+
+function drawEnergy(ctx, w, h) {
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#001a00');
+  grad.addColorStop(0.5, '#002200');
+  grad.addColorStop(1, '#000');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+  // diagonal lines
+  ctx.strokeStyle = 'rgba(57,255,20,0.07)';
+  ctx.lineWidth = 1;
+  for (let i = -h; i < w + h; i += 24) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i + h, h); ctx.stroke();
+  }
+  // glow center
+  const rg = ctx.createRadialGradient(w/2, h*0.5, 0, w/2, h*0.5, w*0.6);
+  rg.addColorStop(0, 'rgba(57,255,20,0.15)');
+  rg.addColorStop(1, 'transparent');
+  ctx.fillStyle = rg;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawLuxury(ctx, w, h) {
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#0a0800');
+  grad.addColorStop(0.5, '#1a1400');
+  grad.addColorStop(1, '#000');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+  // gold dots pattern
+  ctx.fillStyle = 'rgba(255,215,0,0.08)';
+  for (let i = 0; i < 60; i++) {
+    const x = seededRand(i*7+3) * w;
+    const y = seededRand(i*7+4) * h;
+    ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI*2); ctx.fill();
+  }
+  // diamond shape center
+  const rg = ctx.createRadialGradient(w/2, h*0.5, 0, w/2, h*0.5, w*0.7);
+  rg.addColorStop(0, 'rgba(255,215,0,0.12)');
+  rg.addColorStop(1, 'transparent');
+  ctx.fillStyle = rg;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawStreet(ctx, w, h) {
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, w, h);
+  // noise texture effect
+  for (let i = 0; i < 200; i++) {
+    const x = seededRand(i*5) * w;
+    const y = seededRand(i*5+1) * h;
+    const a = seededRand(i*5+2) * 0.08;
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fillRect(x, y, 2, 2);
+  }
+  // horizontal accent
+  ctx.strokeStyle = 'rgba(255,69,0,0.4)';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(0, h*0.41); ctx.lineTo(w*0.6, h*0.41); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,69,0,0.15)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, h*0.415); ctx.lineTo(w*0.8, h*0.415); ctx.stroke();
+}
+
+// Deterministic pseudo-random (seeded)
+let _seed = 42;
+function seededRand(n) {
+  const x = Math.sin(n + _seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function pickPattern(mode) {
+  const keys = Object.keys(PATTERNS);
+  if (mode === 'random') {
+    return PATTERNS[keys[Math.floor(Math.random() * keys.length)]];
+  }
+  return PATTERNS[mode] || PATTERNS.pattern1;
+}
+
+// ============================================================
+// RENDER CARD
+// ============================================================
+function renderCard(canvas, cardIndex, totalCards, pattern, overrides = {}) {
+  _seed = cardIndex * 137 + 29;
+  const s = { ...state, ...overrides };
+  const W = 540, H = 960;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background pattern
+  pattern.bg(ctx, W, H);
+
+  // ---- SHOT LABEL ----
+  ctx.font = '700 22px "Hiragino Kaku Gothic ProN", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.textAlign = 'left';
+  ctx.fillText(`SHORT #${String(cardIndex+1).padStart(2,'0')}`, 28, 46);
+
+  // ---- MAIN TITLE ----
+  const lines = s.mainTitle.split('\n').filter(l => l.trim());
+  const fSize = parseInt(s.fontSize);
+  const fontStr = buildFontStr(s.font, fSize);
+  ctx.font = fontStr;
+  ctx.textAlign = 'center';
+
+  const titleY = H * 0.13;
+  lines.forEach((line, i) => {
+    const y = titleY + i * (fSize * 1.3);
+    applyTextStyle(ctx, s.textStyle, s.textColor, line, W/2, y, fSize);
+  });
+
+  // ---- VIDEO THUMBNAIL AREA ----
+  const thumbY = H * 0.37;
+  const thumbH = H * 0.32;
+  drawThumbnailArea(ctx, W, thumbY, thumbH, cardIndex);
+
+  // ---- CTA ----
+  const ctaY = H * 0.79;
+  ctx.font = '700 28px "Hiragino Kaku Gothic ProN", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = s.ctaColor;
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 8;
+  ctx.fillText(s.ctaText, W/2, ctaY);
+  // arrow DOWN (not right)
+  ctx.font = '700 26px sans-serif';
+  ctx.fillText('▼', W/2, ctaY + 34);
+  ctx.shadowBlur = 0;
+
+  // ---- COUNTER ----
+  ctx.font = '600 18px "Hiragino Kaku Gothic ProN", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillText(`${cardIndex+1} / ${totalCards}`, 24, H - 24);
+
+  // ---- AI生成 BADGE ----
+  const bw = 68, bh = 26, bx = W - bw - 20, by = H - bh - 16;
+  ctx.fillStyle = 'rgba(124,58,237,0.7)';
+  roundRect(ctx, bx, by, bw, bh, 6);
+  ctx.fill();
+  ctx.font = '600 12px "Hiragino Kaku Gothic ProN", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fff';
+  ctx.fillText('AI生成', bx + bw/2, by + bh - 8);
+
+  // ---- BORDER ----
+  drawBorder(ctx, W, H, s.borderStyle, s.borderColor);
+}
+
+function buildFontStr(font, size) {
+  switch(font) {
+    case 'serif': return `700 ${size}px "Hiragino Mincho ProN", Georgia, serif`;
+    case 'rounded': return `700 ${size}px "Hiragino Maru Gothic ProN", sans-serif`;
+    case 'impact': return `900 ${size}px Impact, "Arial Narrow", sans-serif`;
+    default: return `900 ${size}px "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif`;
+  }
+}
+
+function applyTextStyle(ctx, style, color, text, x, y, size) {
+  ctx.fillStyle = color;
+  ctx.strokeStyle = '#000';
+  switch(style) {
+    case 'stroke':
+      ctx.lineWidth = size * 0.12;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(text, x, y);
+      ctx.fillText(text, x, y);
+      break;
+    case 'glow':
+      ctx.shadowColor = color;
+      ctx.shadowBlur = size * 0.5;
+      ctx.fillText(text, x, y);
+      ctx.shadowBlur = 0;
+      break;
+    case 'box': {
+      const m = ctx.measureText(text);
+      const pad = size * 0.2;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      roundRect(ctx, x - m.width/2 - pad, y - size - pad/2, m.width + pad*2, size + pad*1.5, 6);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, y);
+      break;
+    }
+    case 'none':
+      ctx.fillText(text, x, y);
+      break;
+    default: // shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.9)';
+      ctx.shadowBlur = size * 0.3;
+      ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
+      ctx.fillText(text, x, y);
+      ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+      break;
+  }
+}
+
+function drawThumbnailArea(ctx, W, y, h, seed) {
+  // dark box
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  roundRect(ctx, 16, y, W - 32, h, 12);
+  ctx.fill();
+
+  // subtle gradient inside
+  const ig = ctx.createLinearGradient(0, y, 0, y+h);
+  ig.addColorStop(0, 'rgba(255,255,255,0.04)');
+  ig.addColorStop(1, 'transparent');
+  ctx.fillStyle = ig;
+  roundRect(ctx, 16, y, W - 32, h, 12);
+  ctx.fill();
+
+  // play icon
+  const cx = W/2, cy = y + h/2;
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath(); ctx.arc(cx, cy, 44, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath();
+  ctx.moveTo(cx + 18, cy);
+  ctx.lineTo(cx - 12, cy - 20);
+  ctx.lineTo(cx - 12, cy + 20);
+  ctx.closePath(); ctx.fill();
+
+  // bottom label strip
+  const lh = 36;
+  ctx.fillStyle = 'rgba(255,69,0,0.85)';
+  roundRect(ctx, 16, y+h-lh, W-32, lh, { bl: 12, br: 12, tl: 0, tr: 0 });
+  ctx.fill();
+  ctx.font = '600 13px "Hiragino Kaku Gothic ProN", sans-serif';
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.fillText('ボイスキャディ最新型距離計 SL mini レビュー', W/2, y+h-lh+24);
+}
+
+function drawBorder(ctx, W, H, style, color) {
+  if (style === 'none') return;
+  ctx.strokeStyle = color;
+  switch(style) {
+    case 'thin':
+      ctx.lineWidth = 2;
+      ctx.strokeRect(4, 4, W-8, H-8);
+      break;
+    case 'thick':
+      ctx.lineWidth = 6;
+      ctx.strokeRect(4, 4, W-8, H-8);
+      break;
+    case 'glow':
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(4, 4, W-8, H-8);
+      ctx.shadowBlur = 0;
+      break;
+    case 'corner': {
+      const len = 50, lw = 5;
+      ctx.lineWidth = lw;
+      const c = 20;
+      [
+        [[c,c],[c+len,c],[c,c],[c,c+len]],
+        [[W-c,c],[W-c-len,c],[W-c,c],[W-c,c+len]],
+        [[c,H-c],[c+len,H-c],[c,H-c],[c,H-c-len]],
+        [[W-c,H-c],[W-c-len,H-c],[W-c,H-c],[W-c,H-c-len]],
+      ].forEach(([[ax,ay],[bx,by],[cx2,cy],[dx,dy]]) => {
+        ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx2,cy); ctx.lineTo(dx,dy); ctx.stroke();
+      });
+      break;
+    }
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  if (typeof r === 'number') r = { tl: r, tr: r, br: r, bl: r };
+  ctx.beginPath();
+  ctx.moveTo(x + r.tl, y);
+  ctx.lineTo(x + w - r.tr, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y + r.tr);
+  ctx.lineTo(x+w, y+h-r.br);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r.br, y+h);
+  ctx.lineTo(x+r.bl, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r.bl);
+  ctx.lineTo(x, y+r.tl);
+  ctx.quadraticCurveTo(x, y, x+r.tl, y);
+  ctx.closePath();
+}
+
+// ============================================================
+// GENERATE ALL CARDS
+// ============================================================
+function generateAll(randomize = false) {
+  const count = parseInt(state.cardCount);
+  document.getElementById('cardCountLabel').textContent = `${count}枚のSHORT画像`;
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  canvases = [];
+
+  // Pick titles
+  const usedTitles = [...TITLES].sort(() => Math.random() - 0.5).slice(0, count);
+
+  for (let i = 0; i < count; i++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+
+    const label = document.createElement('div');
+    label.className = 'card-label';
+    label.textContent = `SHORT #${String(i+1).padStart(2,'0')}`;
+    wrap.appendChild(label);
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'short-canvas';
+    wrap.appendChild(canvas);
+
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'btn-dl';
+    dlBtn.textContent = '⬇ ダウンロード';
+    dlBtn.addEventListener('click', () => downloadCanvas(canvas, `short_${i+1}`));
+
+    const regenBtn = document.createElement('button');
+    regenBtn.className = 'btn-regen';
+    regenBtn.textContent = '🎲';
+    regenBtn.title = 'このカードを再生成';
+    regenBtn.addEventListener('click', () => {
+      const pat = pickPattern('random');
+      const title = TITLES[Math.floor(Math.random() * TITLES.length)];
+      renderCard(canvas, i, count, pat, { mainTitle: title });
+    });
+
+    actions.appendChild(dlBtn);
+    actions.appendChild(regenBtn);
+    wrap.appendChild(actions);
+
+    grid.appendChild(wrap);
+
+    const pat = pickPattern(randomize ? 'random' : state.patternMode);
+    const title = randomize ? usedTitles[i] : (i === 0 ? state.mainTitle : usedTitles[i]);
+    renderCard(canvas, i, count, pat, { mainTitle: i === 0 ? state.mainTitle : title });
+
+    canvases.push(canvas);
+  }
+}
+
+function downloadCanvas(canvas, name) {
+  const a = document.createElement('a');
+  a.download = `${name}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  showToast(`${name}.png をダウンロードしました`);
+}
+
+function downloadAll() {
+  canvases.forEach((c, i) => {
+    setTimeout(() => downloadCanvas(c, `short_${i+1}`), i * 300);
+  });
+  showToast(`${canvases.length}枚のダウンロードを開始します`);
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function collectSettings() {
+  return {
+    mainTitle: document.getElementById('mainTitle').value,
+    fontSize: document.getElementById('fontSize').value,
+    font: state.font,
+    textColor: state.textColor,
+    textStyle: state.textStyle,
+    ctaText: document.getElementById('ctaText').value,
+    ctaColor: state.ctaColor,
+    borderStyle: state.borderStyle,
+    borderColor: state.borderColor,
+    cardCount: document.getElementById('cardCount').value,
+    patternMode: document.getElementById('patternMode').value,
+  };
+}
+
+function applySettings(s) {
+  document.getElementById('mainTitle').value = s.mainTitle || state.mainTitle;
+  document.getElementById('fontSize').value = s.fontSize || state.fontSize;
+  document.getElementById('fontSizeVal').textContent = (s.fontSize || state.fontSize) + 'px';
+  document.getElementById('ctaText').value = s.ctaText || state.ctaText;
+  document.getElementById('cardCount').value = s.cardCount || state.cardCount;
+  document.getElementById('patternMode').value = s.patternMode || state.patternMode;
+
+  state.mainTitle = s.mainTitle || state.mainTitle;
+  state.fontSize = s.fontSize || state.fontSize;
+  state.font = s.font || state.font;
+  state.textColor = s.textColor || state.textColor;
+  state.textStyle = s.textStyle || state.textStyle;
+  state.ctaText = s.ctaText || state.ctaText;
+  state.ctaColor = s.ctaColor || state.ctaColor;
+  state.borderStyle = s.borderStyle || state.borderStyle;
+  state.borderColor = s.borderColor || state.borderColor;
+  state.cardCount = s.cardCount || state.cardCount;
+  state.patternMode = s.patternMode || state.patternMode;
+
+  // sync UI buttons
+  syncBtnGroup('fontOptions', '[data-font]', 'font', s.font);
+  syncBtnGroup('textStyleOptions', '[data-style]', 'textStyle', s.textStyle);
+  syncBtnGroup('borderStyleOptions', '[data-style]', 'borderStyle', s.borderStyle);
+  syncSwatchGroup('textColorRow', s.textColor);
+  syncSwatchGroup('ctaColorRow', s.ctaColor);
+  syncSwatchGroup('borderColorRow', s.borderColor);
+}
+
+function syncBtnGroup(containerId, selector, key, val) {
+  document.querySelectorAll(`#${containerId} ${selector}`).forEach(b => {
+    b.classList.toggle('active', b.dataset.font === val || b.dataset.style === val);
+  });
+}
+
+function syncSwatchGroup(containerId, val) {
+  document.querySelectorAll(`#${containerId} .color-swatch`).forEach(s => {
+    s.classList.toggle('active', s.dataset.color === val);
+  });
+}
+
+function savePreset(name) {
+  const presets = JSON.parse(localStorage.getItem('shortgen_presets') || '{}');
+  presets[name] = collectSettings();
+  localStorage.setItem('shortgen_presets', JSON.stringify(presets));
+  showToast(`「${name}」を保存しました`);
+}
+
+function loadPresetsUI() {
+  const presets = JSON.parse(localStorage.getItem('shortgen_presets') || '{}');
+  const list = document.getElementById('presetList');
+  list.innerHTML = '';
+  const keys = Object.keys(presets);
+  if (keys.length === 0) {
+    list.innerHTML = '<p style="color:#666;font-size:13px;">保存されたプリセットはありません</p>';
+    return;
+  }
+  keys.forEach(name => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;';
+    row.innerHTML = `<span style="font-size:13px;color:#ddd;">${name}</span>
+      <div style="display:flex;gap:6px;">
+        <button onclick="applyPreset('${name}')" style="padding:5px 12px;background:#4a9eff;border:none;border-radius:5px;color:#fff;font-size:12px;cursor:pointer;">適用</button>
+        <button onclick="deletePreset('${name}')" style="padding:5px 10px;background:#1a1a1a;border:1px solid #333;border-radius:5px;color:#888;font-size:12px;cursor:pointer;">削除</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+window.applyPreset = function(name) {
+  const presets = JSON.parse(localStorage.getItem('shortgen_presets') || '{}');
+  if (presets[name]) {
+    applySettings(presets[name]);
+    document.getElementById('loadModal').classList.remove('open');
+    showToast(`「${name}」を適用しました`);
+    generateAll();
+  }
+};
+
+window.deletePreset = function(name) {
+  const presets = JSON.parse(localStorage.getItem('shortgen_presets') || '{}');
+  delete presets[name];
+  localStorage.setItem('shortgen_presets', JSON.stringify(presets));
+  loadPresetsUI();
+};
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Sync state from sidebar inputs live
+  document.getElementById('mainTitle').addEventListener('input', e => { state.mainTitle = e.target.value; });
+  document.getElementById('fontSize').addEventListener('input', e => {
+    state.fontSize = e.target.value;
+    document.getElementById('fontSizeVal').textContent = e.target.value + 'px';
+  });
+  document.getElementById('ctaText').addEventListener('input', e => { state.ctaText = e.target.value; });
+  document.getElementById('cardCount').addEventListener('change', e => { state.cardCount = e.target.value; });
+  document.getElementById('patternMode').addEventListener('change', e => { state.patternMode = e.target.value; });
+
+  // Font buttons
+  document.querySelectorAll('#fontOptions .font-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.font = btn.dataset.font;
+      document.querySelectorAll('#fontOptions .font-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Text style buttons
+  document.querySelectorAll('#textStyleOptions .style-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.textStyle = btn.dataset.style;
+      document.querySelectorAll('#textStyleOptions .style-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Border style buttons
+  document.querySelectorAll('#borderStyleOptions .style-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.borderStyle = btn.dataset.style;
+      document.querySelectorAll('#borderStyleOptions .style-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Color swatches — text
+  document.querySelectorAll('#textColorRow .color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      state.textColor = sw.dataset.color;
+      document.querySelectorAll('#textColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+    });
+  });
+  document.getElementById('customTextColor').addEventListener('input', e => {
+    state.textColor = e.target.value;
+    document.querySelectorAll('#textColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+  });
+
+  // Color swatches — CTA
+  document.querySelectorAll('#ctaColorRow .color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      state.ctaColor = sw.dataset.color;
+      document.querySelectorAll('#ctaColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+    });
+  });
+  document.getElementById('customCtaColor').addEventListener('input', e => {
+    state.ctaColor = e.target.value;
+    document.querySelectorAll('#ctaColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+  });
+
+  // Color swatches — border
+  document.querySelectorAll('#borderColorRow .color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      state.borderColor = sw.dataset.color;
+      document.querySelectorAll('#borderColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+    });
+  });
+  document.getElementById('customBorderColor').addEventListener('input', e => {
+    state.borderColor = e.target.value;
+    document.querySelectorAll('#borderColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+  });
+
+  // Generate buttons
+  document.getElementById('btnGenerate').addEventListener('click', () => {
+    syncStateFromInputs();
+    generateAll(false);
+  });
+  document.getElementById('btnGenerateTop').addEventListener('click', () => {
+    syncStateFromInputs();
+    generateAll(true);
+  });
+
+  // Download all
+  document.getElementById('btnDlAll').addEventListener('click', downloadAll);
+
+  // Save settings
+  document.getElementById('btnSaveSettings').addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.add('open');
+  });
+  document.getElementById('btnCancelSave').addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.remove('open');
+  });
+  document.getElementById('btnConfirmSave').addEventListener('click', () => {
+    const name = document.getElementById('presetName').value.trim() || '無名プリセット';
+    savePreset(name);
+    document.getElementById('settingsModal').classList.remove('open');
+  });
+
+  // Load settings
+  document.getElementById('btnLoadSettings').addEventListener('click', () => {
+    loadPresetsUI();
+    document.getElementById('loadModal').classList.add('open');
+  });
+  document.getElementById('btnCancelLoad').addEventListener('click', () => {
+    document.getElementById('loadModal').classList.remove('open');
+  });
+
+  // Initial render
+  generateAll(true);
+});
+
+function syncStateFromInputs() {
+  state.mainTitle = document.getElementById('mainTitle').value;
+  state.fontSize = document.getElementById('fontSize').value;
+  state.ctaText = document.getElementById('ctaText').value;
+  state.cardCount = document.getElementById('cardCount').value;
+  state.patternMode = document.getElementById('patternMode').value;
+}
+</script>
+</body>
+</html>
