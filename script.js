@@ -4,10 +4,13 @@ const state = {
   videoURL: null,
   count: 3,
   font: 'gothic',
+  fontSize: 54,
   textColor: '#ffffff',
   borderStyle: 'none',
   borderColor: '#FFD700',
   pattern: 'random',
+  ctaText: '続きは本編で',
+  ctaColor: '#FFD700',
   copies: [],
 };
 
@@ -158,8 +161,8 @@ function drawFrame(ctx, videoEl, title, elapsed, clipDuration, options={}) {
   // Title — auto-fit font size so text never overflows
   const MAX_TEXT_W = W - 40; // 20px margin each side
   const rawLines = title.split('\n').filter(l => l.trim());
-  // Start big, shrink until all lines fit
-  let fSize = rawLines.length > 1 ? 54 : 60;
+  // Start from user-set size, shrink until all lines fit
+  let fSize = options.fontSize || state.fontSize || (rawLines.length > 1 ? 54 : 60);
   const MIN_SIZE = 28;
   let fittedLines = rawLines;
   outer: while (fSize >= MIN_SIZE) {
@@ -186,11 +189,13 @@ function drawFrame(ctx, videoEl, title, elapsed, clipDuration, options={}) {
 
   // CTA
   const ctaY = BOT_Y + BOT_H * 0.38;
+  const ctaColor = options.ctaColor || state.ctaColor;
+  const ctaText  = options.ctaText  || state.ctaText;
   ctx.font = '700 30px "Hiragino Kaku Gothic ProN",sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#FFD700';
+  ctx.fillStyle = ctaColor;
   ctx.shadowColor='rgba(0,0,0,0.9)'; ctx.shadowBlur=10;
-  ctx.fillText('続きは本編で', W/2, ctaY);
+  ctx.fillText(ctaText, W/2, ctaY);
   ctx.font = '700 26px sans-serif';
   ctx.fillText('▼', W/2, ctaY + 36);
   ctx.shadowBlur = 0;
@@ -234,6 +239,8 @@ function buildFont(style, size) {
   switch(style) {
     case 'mincho':  return `700 ${size}px "Hiragino Mincho ProN",serif`;
     case 'youtube': return `900 ${size}px -apple-system,"Helvetica Neue",sans-serif`;
+    case 'rounded': return `700 ${size}px "Hiragino Maru Gothic ProN","M PLUS Rounded 1c",sans-serif`;
+    case 'impact':  return `900 ${size}px Impact,"Arial Narrow",sans-serif`;
     default:        return `900 ${size}px "Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif`;
   }
 }
@@ -810,6 +817,20 @@ function setupColorGroup(groupId, key, customId) {
 }
 setupColorGroup('text-color-group','textColor','custom-text-color');
 setupColorGroup('border-color-group','borderColor','custom-border-color');
+setupColorGroup('cta-color-group','ctaColor','custom-cta-color');
+
+// Font size slider
+const fontSizeSlider = document.getElementById('font-size-slider');
+const fontSizeVal    = document.getElementById('font-size-val');
+fontSizeSlider.addEventListener('input', e => {
+  state.fontSize = parseInt(e.target.value, 10);
+  fontSizeVal.textContent = e.target.value + 'px';
+});
+
+// CTA text input
+document.getElementById('cta-text-input').addEventListener('input', e => {
+  state.ctaText = e.target.value || '続きは本編で';
+});
 
 // ===== CARD DATA =====
 let cardData = [];

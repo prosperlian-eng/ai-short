@@ -57,10 +57,41 @@
             <button class="toggle-btn active" data-value="gothic">ゴシック強調</button>
             <button class="toggle-btn" data-value="mincho">明朝ドラマ風</button>
             <button class="toggle-btn" data-value="youtube">YouTube風</button>
+            <button class="toggle-btn" data-value="rounded">丸ゴシック</button>
+            <button class="toggle-btn" data-value="impact">IMPACT</button>
             <button class="toggle-btn" data-value="glow">光彩</button>
             <button class="toggle-btn" data-value="stroke">縁取り</button>
             <button class="toggle-btn" data-value="box">ボックス</button>
             <button class="toggle-btn" data-value="simple">シンプル</button>
+          </div>
+        </div>
+
+        <!-- フォントサイズ -->
+        <div class="setting-group">
+          <label class="setting-label">フォントサイズ</label>
+          <div class="range-row">
+            <input type="range" id="font-size-slider" min="24" max="80" value="54" />
+            <span class="range-val" id="font-size-val">54px</span>
+          </div>
+        </div>
+
+        <!-- CTAテキスト -->
+        <div class="setting-group">
+          <label class="setting-label">CTAテキスト</label>
+          <input type="text" id="cta-text-input" class="setting-text-input" value="続きは本編で" maxlength="20" placeholder="続きは本編で" />
+        </div>
+
+        <!-- CTAカラー -->
+        <div class="setting-group">
+          <label class="setting-label">CTAカラー</label>
+          <div class="color-picker-row" id="cta-color-group">
+            <div class="color-dot active" data-color="#FFD700" style="background:#FFD700;" title="ゴールド"></div>
+            <div class="color-dot" data-color="#ffffff" style="background:#fff;" title="白"></div>
+            <div class="color-dot" data-color="#FF4500" style="background:#FF4500;" title="オレンジレッド"></div>
+            <div class="color-dot" data-color="#00CFFF" style="background:#00CFFF;" title="シアン"></div>
+            <div class="color-dot" data-color="#39FF14" style="background:#39FF14;" title="ネオングリーン"></div>
+            <div class="color-dot" data-color="#FF69B4" style="background:#FF69B4;" title="ピンク"></div>
+            <input type="color" id="custom-cta-color" value="#FFD700" title="カスタム" />
           </div>
         </div>
 
