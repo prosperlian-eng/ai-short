@@ -3,7 +3,8 @@ const state = {
   videoFile: null,
   videoURL: null,
   count: 3,
-  font: 'gothic',
+  font: 'gothic',      // テキストエフェクト（影/光彩/縁取り等）
+  fontFamily: 'gothic', // フォントファミリー
   fontSize: 54,
   textColor: '#ffffff',
   borderStyle: 'none',
@@ -116,7 +117,8 @@ function getPattern(mode, idx) {
 
 // ===== DRAW FRAME =====
 function drawFrame(ctx, videoEl, title, elapsed, clipDuration, options={}) {
-  const font        = options.font        || state.font;
+  const fontFamily  = options.fontFamily  || state.fontFamily;
+  const font        = options.font        || state.font;        // エフェクト
   const textColor   = options.textColor   || state.textColor;
   const borderStyle = options.borderStyle || state.borderStyle;
   const borderColor = options.borderColor || state.borderColor;
@@ -166,7 +168,7 @@ function drawFrame(ctx, videoEl, title, elapsed, clipDuration, options={}) {
   const MIN_SIZE = 28;
   let fittedLines = rawLines;
   outer: while (fSize >= MIN_SIZE) {
-    ctx.font = buildFont(font, fSize);
+    ctx.font = buildFont(fontFamily, fSize);
     for (const line of fittedLines) {
       if (ctx.measureText(line).width > MAX_TEXT_W) { fSize -= 2; continue outer; }
     }
@@ -185,7 +187,7 @@ function drawFrame(ctx, videoEl, title, elapsed, clipDuration, options={}) {
   const lineH = fSize * 1.28;
   const totalTextH = finalLines.length * lineH;
   const titleStartY = Math.max(fSize + 10, (TOP_H - totalTextH) / 2 + fSize);
-  finalLines.forEach((line, i) => drawText(ctx, font, textColor, line, W/2, titleStartY + i * lineH, fSize));
+  finalLines.forEach((line, i) => drawText(ctx, font, textColor, line, W/2, titleStartY + i * lineH, fSize, fontFamily));
 
   // CTA
   const ctaY = BOT_Y + BOT_H * 0.38;
@@ -237,15 +239,25 @@ function drawFrame(ctx, videoEl, title, elapsed, clipDuration, options={}) {
 
 function buildFont(style, size) {
   switch(style) {
-    case 'mincho':  return `700 ${size}px "Hiragino Mincho ProN",serif`;
-    case 'youtube': return `900 ${size}px -apple-system,"Helvetica Neue",sans-serif`;
-    case 'rounded': return `700 ${size}px "Hiragino Maru Gothic ProN","M PLUS Rounded 1c",sans-serif`;
+    case 'mincho':  return `700 ${size}px "Noto Serif JP","Hiragino Mincho ProN",serif`;
+    case 'dela':    return `400 ${size}px "Dela Gothic One",cursive`;
+    case 'reggae':  return `400 ${size}px "Reggae One",cursive`;
+    case 'rampart': return `400 ${size}px "Rampart One",cursive`;
+    case 'rock3d':  return `400 ${size}px "Rock 3D",cursive`;
+    case 'mplus':   return `900 ${size}px "M PLUS 1p",sans-serif`;
+    case 'rounded': return `700 ${size}px "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif`;
+    case 'dot':     return `400 ${size}px "DotGothic16",sans-serif`;
+    case 'yomogi':  return `400 ${size}px "Yomogi",cursive`;
+    case 'zen':     return `900 ${size}px "Zen Kaku Gothic New",sans-serif`;
+    case 'zenold':  return `700 ${size}px "Zen Old Mincho",serif`;
     case 'impact':  return `900 ${size}px Impact,"Arial Narrow",sans-serif`;
-    default:        return `900 ${size}px "Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif`;
+    case 'youtube': return `900 ${size}px -apple-system,"Helvetica Neue",sans-serif`;
+    default:        return `900 ${size}px "Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif`;
   }
 }
 
-function drawText(ctx, style, color, text, x, y, size) {
+function drawText(ctx, style, color, text, x, y, size, fontFamily) {
+  if (fontFamily) ctx.font = buildFont(fontFamily, size);
   ctx.fillStyle = color;
   switch(style) {
     case 'stroke':
@@ -795,9 +807,26 @@ function setupToggle(group, key, isInt=false) {
   });
 }
 setupToggle(countGroup,'count',true);
-setupToggle(fontGroup,'font');
 setupToggle(borderGroup,'borderStyle');
 setupToggle(patternGroup,'pattern');
+
+// Font family picker
+document.getElementById('font-picker').addEventListener('click', e => {
+  const btn = e.target.closest('.font-card');
+  if (!btn) return;
+  document.querySelectorAll('#font-picker .font-card').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.fontFamily = btn.dataset.value;
+});
+
+// Text effect group (reuses font-group id for effect only)
+fontGroup.addEventListener('click', e => {
+  const btn = e.target.closest('.toggle-btn');
+  if (!btn) return;
+  fontGroup.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.fontEffect = btn.dataset.value;
+});
 
 // ===== COLOR PICKERS =====
 function setupColorGroup(groupId, key, customId) {

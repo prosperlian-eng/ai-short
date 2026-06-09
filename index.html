@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ShortAI — AIショート動画生成デモ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=M+PLUS+1p:wght@900&family=M+PLUS+Rounded+1c:wght@700&family=Noto+Sans+JP:wght@900&family=Noto+Serif+JP:wght@700&family=Rampart+One&family=Reggae+One&family=Rock+3D&family=Yomogi&family=Zen+Kaku+Gothic+New:wght@900&family=Zen+Old+Mincho:wght@700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -50,15 +53,31 @@
           </div>
         </div>
 
-        <!-- テキストスタイル -->
+        <!-- フォントファミリー -->
+        <div class="setting-group setting-group--full">
+          <label class="setting-label">フォント</label>
+          <div class="font-picker" id="font-picker">
+            <button class="font-card active" data-value="gothic" style="font-family:'Noto Sans JP',sans-serif;font-weight:900;">ゴシック</button>
+            <button class="font-card" data-value="mincho" style="font-family:'Noto Serif JP',serif;font-weight:700;">明朝体</button>
+            <button class="font-card" data-value="dela" style="font-family:'Dela Gothic One',cursive;">デラゴシック</button>
+            <button class="font-card" data-value="reggae" style="font-family:'Reggae One',cursive;">レゲエ</button>
+            <button class="font-card" data-value="rampart" style="font-family:'Rampart One',cursive;">ランパート</button>
+            <button class="font-card" data-value="rock3d" style="font-family:'Rock 3D',cursive;">Rock 3D</button>
+            <button class="font-card" data-value="mplus" style="font-family:'M PLUS 1p',sans-serif;font-weight:900;">M PLUS</button>
+            <button class="font-card" data-value="rounded" style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:700;">丸ゴシック</button>
+            <button class="font-card" data-value="dot" style="font-family:'DotGothic16',sans-serif;">ドットゴシック</button>
+            <button class="font-card" data-value="yomogi" style="font-family:'Yomogi',cursive;">よもぎ</button>
+            <button class="font-card" data-value="zen" style="font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;">禅角ゴシック</button>
+            <button class="font-card" data-value="zenold" style="font-family:'Zen Old Mincho',serif;font-weight:700;">禅旧明朝</button>
+            <button class="font-card" data-value="impact" style="font-family:Impact,'Arial Narrow',sans-serif;font-weight:900;">IMPACT</button>
+          </div>
+        </div>
+
+        <!-- テキストエフェクト -->
         <div class="setting-group">
-          <label class="setting-label">テキストスタイル</label>
+          <label class="setting-label">テキストエフェクト</label>
           <div class="btn-group" id="font-group">
-            <button class="toggle-btn active" data-value="gothic">ゴシック強調</button>
-            <button class="toggle-btn" data-value="mincho">明朝ドラマ風</button>
-            <button class="toggle-btn" data-value="youtube">YouTube風</button>
-            <button class="toggle-btn" data-value="rounded">丸ゴシック</button>
-            <button class="toggle-btn" data-value="impact">IMPACT</button>
+            <button class="toggle-btn active" data-value="gothic">影（デフォルト）</button>
             <button class="toggle-btn" data-value="glow">光彩</button>
             <button class="toggle-btn" data-value="stroke">縁取り</button>
             <button class="toggle-btn" data-value="box">ボックス</button>
